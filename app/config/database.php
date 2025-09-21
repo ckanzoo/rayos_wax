@@ -59,7 +59,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 
 $database['main'] = array(
     'driver'	=> 'mysql',
-    'hostname'	=> '127.0.0.1',
+    'hostname'	=> 'localhost',
     'port'		=> '3306',
     'username'	=> 'root',
     'password'	=> '',

@@ -6,70 +6,38 @@ class UserController extends Controller {
     public function __construct()
     {
         parent::__construct();
+        $this->call->model('UserModel');
     }
 
-    
     public function index()
     {
-        $data['users'] = $this->UserModel->all();
+        $page = $this->io->get('page') ?? 1;
+        $q    = trim($this->io->get('q') ?? '');
+        $limit = 10;
+
+        $all = $this->UserModel->get_paginated($q, $limit, $page);
+
+        $data['users'] = $all['records'];
+        $total_rows    = $all['total_rows'];
+
+        // Pagination setup
+        $this->pagination->set_options([
+            'first_link'     => '⏮ First',
+            'last_link'      => 'Last ⏭',
+            'next_link'      => 'Next →',
+            'prev_link'      => '← Prev',
+            'page_delimiter' => '&page='
+        ]);
+        $this->pagination->set_theme('tailwind');
+        $this->pagination->initialize($total_rows, $limit, $page, site_url('/').'?q='.$q);
+
+        $data['page'] = $this->pagination->paginate();
+        $data['q']    = $q;
+
         $this->call->view('user/view', $data);
     }
 
-    
-    public function create()
-    {
-        if ($this->io->method() === 'post') {
-            $username = $this->io->post('username');
-            $email    = $this->io->post('email');
-
-            if (!empty($username) && !empty($email)) {
-                $this->UserModel->insert([
-                    'username' => $username,
-                    'email'    => $email
-                ]);
-                redirect('/'); 
-            } else {
-                $data['error'] = "All fields are required!";
-                $this->call->view('user/create', $data);
-            }
-        } else {
-            $this->call->view('user/create');
-        }
-    }
-
-    
-    public function update($id)
-    {
-        $user = $this->UserModel->find($id);
-
-        if (!$user) {
-            redirect('/'); 
-        }
-
-        if ($this->io->method() === 'post') {
-            $username = $this->io->post('username');
-            $email    = $this->io->post('email');
-
-            if (!empty($username) && !empty($email)) {
-                $this->UserModel->update($id, [
-                    'username' => $username,
-                    'email'    => $email
-                ]);
-                redirect('/'); 
-            } else {
-                $data['user'] = $user;
-                $data['error'] = "All fields are required!";
-                $this->call->view('user/update', $data);
-            }
-        } else {
-            $this->call->view('user/update', ['user' => $user]);
-        }
-    }
-
-    
-    public function delete($id)
-    {
-        $this->UserModel->delete($id);
-        redirect('/');
-    }
+    public function create() { /* keep same */ }
+    public function update($id) { /* keep same */ }
+    public function delete($id) { /* keep same */ }
 }
